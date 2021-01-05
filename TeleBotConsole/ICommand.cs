@@ -2,6 +2,6 @@
 {
     interface ICommand
     {
-        void Execute();
+        string Execute(string content);
     }
 }

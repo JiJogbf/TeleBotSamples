@@ -7,18 +7,6 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace TeleBotConsole
 {
 
-    class CalculateCommand : ICommand
-    {
-        public CalculateCommand()
-        {
-        }
-
-        public void Execute()
-        {
-            // throw new NotImplementedException();
-        }
-    }
-
     class Program
     {
         static void FirstTestRun()
@@ -50,8 +38,7 @@ namespace TeleBotConsole
             botClient.OnMessage += Bot_OnMessage;
             botClient.StartReceiving();
 
-            Console.WriteLine("Press any key to exit");
-            
+            Console.WriteLine("Press any key to exit");          
             Console.ReadKey();
 
             botClient.StopReceiving();
@@ -68,10 +55,10 @@ namespace TeleBotConsole
                 if (commands.Has(commandKey))
                 {
                     var command = commands.GetCommand(commandKey);
-                    command.Execute();
+                    var result = command.Execute(text);
                     var message = await botClient.SendTextMessageAsync(
                       chatId: e.Message.Chat,
-                      text: "Command '" + commandKey + "' executed. "
+                      text: "Command '" + commandKey + "' executed. \n" + result
                     );
                     //^\.([a-z]+)\s(.+)$
                 }
@@ -82,13 +69,21 @@ namespace TeleBotConsole
                       text: "No such command:\n" + e.Message.Text
                     );
                 }
+            }
+        }
 
+        class HelpCommand: ICommand
+        {
+            public string Execute(string content)
+            {
+                return "Available commands:\n.calc - calc simple expression.\n.help - print this list\n";
             }
         }
 
         public void Settup()
         {
-            commands.Add(".calc", new CalculateCommand());
+            commands.Add(".calc", new CalculateCommand(".calc"));
+            commands.Add(".help", new HelpCommand());
         }
 
         static void Main()
