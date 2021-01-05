@@ -1,8 +1,24 @@
-﻿using System;using Telegram.Bot;
+﻿using System;
+using Telegram.Bot;
 using Telegram.Bot.Args;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TeleBotConsole
 {
+
+    class CalculateCommand : ICommand
+    {
+        public CalculateCommand()
+        {
+        }
+
+        public void Execute()
+        {
+            // throw new NotImplementedException();
+        }
+    }
+
     class Program
     {
         static void FirstTestRun()
@@ -16,10 +32,12 @@ namespace TeleBotConsole
         }
 
         private ITelegramBotClient botClient;
+        private ICommands commands;
 
-        public Program(ITelegramBotClient botClient)
+        public Program(ITelegramBotClient botClient, ICommands commands)
         {
             this.botClient = botClient;
+            this.commands = commands;
         }
 
         public void Run()
@@ -33,10 +51,10 @@ namespace TeleBotConsole
             botClient.StartReceiving();
 
             Console.WriteLine("Press any key to exit");
+            
             Console.ReadKey();
 
             botClient.StopReceiving();
-
         }
 
         private async void Bot_OnMessage(object sender, MessageEventArgs e)
@@ -44,19 +62,41 @@ namespace TeleBotConsole
             if (e.Message.Text != null)
             {
                 Console.WriteLine($"Received a text message in chat {e.Message.Chat.Id}.");
+                var text = e.Message.Text;
+                var items = text.Split(' ');
+                var commandKey = items[0];
+                if (commands.Has(commandKey))
+                {
+                    var command = commands.GetCommand(commandKey);
+                    command.Execute();
+                    var message = await botClient.SendTextMessageAsync(
+                      chatId: e.Message.Chat,
+                      text: "Command '" + commandKey + "' executed. "
+                    );
+                    //^\.([a-z]+)\s(.+)$
+                }
+                else
+                {
+                    var message = await botClient.SendTextMessageAsync(
+                      chatId: e.Message.Chat,
+                      text: "No such command:\n" + e.Message.Text
+                    );
+                }
 
-                await botClient.SendTextMessageAsync(
-                  chatId: e.Message.Chat,
-                  text: "You said:\n" + e.Message.Text
-                );
             }
         }
 
+        public void Settup()
+        {
+            commands.Add(".calc", new CalculateCommand());
+        }
 
         static void Main()
         {
             var program = new Program(
-                new TelegramBotClient("1550556419:AAH_gA2Kn465tliKxTh8sP7EarHGI4EUsIw")); 
+                new TelegramBotClient("1550556419:AAH_gA2Kn465tliKxTh8sP7EarHGI4EUsIw"),
+                new LoggableCommands(new DefaultCommands()));
+            program.Settup();
             program.Run();
         }
     }
