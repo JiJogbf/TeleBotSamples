@@ -9,16 +9,6 @@ namespace TeleBotConsole
 
     class Program
     {
-        static void FirstTestRun()
-        {
-            var token = "1550556419:AAH_gA2Kn465tliKxTh8sP7EarHGI4EUsIw";
-            var botClient = new TelegramBotClient(token);
-            var me = botClient.GetMeAsync().Result;
-            Console.WriteLine(
-              $"Hello, World! I am user {me.Id} and my name is {me.FirstName}."
-            );
-        }
-
         private ITelegramBotClient botClient;
         private ICommands commands;
 
@@ -89,7 +79,7 @@ namespace TeleBotConsole
         static void Main()
         {
             var program = new Program(
-                new TelegramBotClient("1550556419:AAH_gA2Kn465tliKxTh8sP7EarHGI4EUsIw"),
+                new TelegramBotClient("pass_you_token"),
                 new LoggableCommands(new DefaultCommands()));
             program.Settup();
             program.Run();
